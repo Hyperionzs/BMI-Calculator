@@ -7,87 +7,359 @@
     <title>BMI Calculator</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="top-controls">
-        <button id="toggleModeBtn" onclick="toggleMode()">🌙 Dark Mode</button>
-        <button id="exportCSVBtn" onclick="exportCSV()"><i class="fas fa-file-download"></i> Export CSV</button>
-    </div>
-    
     <div class="container">
+        <div class="top-controls">
+            <div class="language-selector">
+                <button id="languageBtn" onclick="toggleLanguage()">
+                    <i class="fas fa-language"></i> <span id="currentLang">EN</span>
+                </button>
+            </div>
+            <button id="toggleModeBtn" onclick="toggleMode()">🌙 Dark Mode</button>
+            <button id="exportPDFBtn" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Export PDF</button>
+        </div>
+        
         <div class="app-header">
-            <h1>BMI Calculator</h1>
-            <p class="subtitle">Track your Body Mass Index over time</p>
-        </div>
-        
-        <div class="unit-toggle">
-            <label class="switch">
-                <input type="checkbox" id="unitToggle" checked onchange="toggleUnit()">
-                <span class="slider round"></span>
-            </label>
-            <span id="unitLabel">Metric (cm/kg) <i class="fas fa-exchange-alt"></i> Imperial (in/lbs)</span>
-        </div>
-        
-        <div class="input-container">
-            <div class="form-group">
-                <label for="height" id="heightLabel"><i class="fas fa-ruler-vertical"></i> Height (cm)</label>
-                <input type="number" id="height" placeholder="e.g. 170" min="50" max="250">
-            </div>
-            <div class="form-group">
-                <label for="weight" id="weightLabel"><i class="fas fa-weight"></i> Weight (kg)</label>
-                <input type="number" id="weight" placeholder="e.g. 65" min="20" max="300">
+            <h1 id="app-title">BMI Calculator</h1>
+            <p class="subtitle" id="app-subtitle">Track your Body Mass Index over time</p>
+            
+            <div class="quick-info">
+                <div class="info-pill">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="quick-info">BMI helps assess whether your weight is healthy for your height</span>
+                </div>
             </div>
         </div>
         
-        <div class="button-group">
-            <button class="primary-btn" onclick="calculateBMI()"><i class="fas fa-calculator"></i> Calculate</button>
-            <button class="secondary-btn" onclick="reset()"><i class="fas fa-redo"></i> Reset</button>
-        </div>
-        
-        <div id="result" class="result-display"></div>
-        
-        <div class="chart-container">
-            <h3><i class="fas fa-chart-line"></i> BMI Trend</h3>
-            <canvas id="bmiChart"></canvas>
-        </div>
-        
-        <div id="historyContainer" class="history-container hidden">
-            <div class="history-header">
-                <h3><i class="fas fa-history"></i> History</h3>
-                <button class="clear-btn" onclick="clearHistory()"><i class="fas fa-trash"></i> Clear</button>
+        <div class="main-content">
+            <div class="calculator-section">
+                <div class="unit-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="unitToggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <span id="toggle-units">Metric (cm/kg) <i class="fas fa-exchange-alt"></i> Imperial (in/lbs)</span>
+                </div>
+                
+                <div class="input-container">
+                    <div class="form-group">
+                        <label for="height" id="label-height"><i class="fas fa-ruler-vertical"></i> Height <span id="height-unit">(cm)</span></label>
+                        <input type="number" id="height" placeholder="e.g. 170" min="50" max="250">
+                    </div>
+                    <div class="form-group">
+                        <label for="weight" id="label-weight"><i class="fas fa-weight"></i> Weight <span id="weight-unit">(kg)</span></label>
+                        <input type="number" id="weight" placeholder="e.g. 65" min="20" max="300">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="primary-btn" id="calculate-button" onclick="calculateBMI()"><i class="fas fa-calculator"></i> Calculate</button>
+                    <button class="secondary-btn" id="reset-button" onclick="reset()"><i class="fas fa-redo"></i> Reset</button>
+                    <button class="share-button" id="share-button" disabled><i class="fas fa-share-alt"></i> <span id="share-button-text">Share</span></button>
+                </div>
+                
+                <div id="result" class="result-display"></div>
             </div>
-            <div id="historyList" class="history-list"></div>
-        </div>
-        
-        <div class="info-section">
-            <h3><i class="fas fa-info-circle"></i> BMI Categories</h3>
-            <div class="bmi-categories">
-                <div class="bmi-category-item underweight">
-                    <span class="category-name">Underweight</span>
-                    <span class="category-range">&lt; 18.5</span>
+            
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-btn active" id="button-calc" data-tab="calculator-pro-tab"><i class="fas fa-calculator"></i> BMI Calculator Pro</button>
+                    <button class="tab-btn" id="button-history" data-tab="history-tab"><i class="fas fa-history"></i> History</button>
+                    <button class="tab-btn" id="button-info" data-tab="info-tab"><i class="fas fa-info-circle"></i> Info BMI</button>
                 </div>
-                <div class="bmi-category-item normal">
-                    <span class="category-name">Normal</span>
-                    <span class="category-range">18.5 - 24.9</span>
+                
+                <div id="calculator-pro-tab" class="tab-content active">
+                    <div class="pro-features">
+                        <h3><i class="fas fa-star"></i> BMI Calculator Pro</h3>
+                        
+                        <div class="feature-cards">
+                            <div class="feature-card">
+                                <div class="feature-header">
+                                    <i class="fas fa-heartbeat"></i>
+                                    <h4 class="pro-feature-title">Ideal Weight</h4>
+                                </div>
+                                <div class="feature-content">
+                                    <p class="pro-feature-desc">Based on your height:</p>
+                                    <div id="ideal-weight-result" class="feature-result">
+                                        <span class="placeholder">Enter height in calculator</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-header">
+                                    <i class="fas fa-fire"></i>
+                                    <h4 class="pro-feature-title">Daily Calories</h4>
+                                </div>
+                                <div class="feature-content">
+                                    <p class="pro-feature-desc">Estimated calorie needs:</p>
+                                    <div class="form-group inline">
+                                        <label for="activity-level" id="label-activity">Activity Level:</label>
+                                        <select id="activity-level" onchange="updateCalorieCalculation()">
+                                            <option value="1.2" id="activity-low">Low (Sedentary)</option>
+                                            <option value="1.375" id="activity-medium" selected>Medium (1-3x Weekly)</option>
+                                            <option value="1.55" id="activity-high">Active (3-5x Weekly)</option>
+                                            <option value="1.725" id="activity-very-high">Very Active (6-7x Weekly)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group inline">
+                                        <label for="gender" id="label-gender">Gender:</label>
+                                        <select id="gender" onchange="updateCalorieCalculation()">
+                                            <option value="male" id="gender-male">Male</option>
+                                            <option value="female" id="gender-female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group inline">
+                                        <label for="age" id="label-age">Age:</label>
+                                        <input type="number" id="age" min="15" max="100" value="30" onchange="updateCalorieCalculation()">
+                                    </div>
+                                    <div id="calorie-result" class="feature-result">
+                                        <span class="placeholder">Enter data above</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-card">
+                                <div class="feature-header">
+                                    <i class="fas fa-weight"></i>
+                                    <h4 class="pro-feature-title">Target Weight</h4>
+                                </div>
+                                <div class="feature-content">
+                                    <p class="pro-feature-desc">To achieve ideal BMI (22):</p>
+                                    <div id="target-weight-result" class="feature-result">
+                                        <span class="placeholder">Enter height and weight in calculator</span>
+                                    </div>
+                                    <button onclick="showTargetCalculator()" id="target-calculator-title" class="secondary-btn target-btn"><i class="fas fa-bullseye"></i> Target Calculator</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tips-container">
+                            <h4 id="health-tips-title"><i class="fas fa-lightbulb"></i> Health Tips</h4>
+                            <div class="tips-cards">
+                                <div class="tip-card">
+                                    <i class="fas fa-apple-alt"></i>
+                                    <p>Eat 5 servings of fruits & vegetables every day</p>
+                                </div>
+                                <div class="tip-card">
+                                    <i class="fas fa-walking"></i>
+                                    <p>Do 30 minutes of physical activity daily</p>
+                                </div>
+                                <div class="tip-card">
+                                    <i class="fas fa-tint"></i>
+                                    <p>Drink 8 glasses of water every day</p>
+                                </div>
+                                <div class="tip-card">
+                                    <i class="fas fa-bed"></i>
+                                    <p>Sleep 7-8 hours every night</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="bmi-category-item overweight">
-                    <span class="category-name">Overweight</span>
-                    <span class="category-range">25 - 29.9</span>
+                
+                <div id="history-tab" class="tab-content">
+                    <div id="historyContainer" class="history-container">
+                        <div class="history-header">
+                            <h3><i class="fas fa-history"></i> History</h3>
+                            <div>
+                                <button class="secondary-btn" id="add-test-data" onclick="addSampleData()" style="margin-right: 10px;"><i class="fas fa-vial"></i> Add Test Data</button>
+                                <button class="clear-btn" id="clear-history" onclick="clearHistory()"><i class="fas fa-trash"></i> Clear</button>
+                            </div>
+                        </div>
+                        <div id="historyList" class="history-list"></div>
+                    </div>
                 </div>
-                <div class="bmi-category-item obese">
-                    <span class="category-name">Obese</span>
-                    <span class="category-range">&gt; 30</span>
+                
+                <div id="info-tab" class="tab-content">
+                    <div class="info-section">
+                        <h3 id="bmi-categories-title"><i class="fas fa-info-circle"></i> BMI Categories</h3>
+                        <div class="bmi-categories-container">
+                            
+                            <div class="bmi-categories">
+                                <div class="bmi-category-item underweight">
+                                    <div class="category-icon"><i class="fas fa-arrow-down"></i></div>
+                                    <span class="category-name" id="cat-underweight">Underweight</span>
+                                    <span class="category-range">&lt; 18.5</span>
+                                    <span class="category-risks" id="risk-underweight">Risk of malnutrition, weak immune system</span>
+                                    <div class="category-health-impact">
+                                        <h5><i class="fas fa-heartbeat"></i> Health Impact</h5>
+                                        <ul>
+                                            <li>Impaired immune function</li>
+                                            <li>Nutrient deficiencies</li>
+                                            <li>Reduced muscle mass</li>
+                                            <li>Decreased bone density</li>
+                                        </ul>
+                                    </div>
+                                    <div class="category-tips">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Focus on nutrient-dense foods and protein intake</span>
+                                    </div>
+                                </div>
+                                <div class="bmi-category-item normal">
+                                    <div class="category-icon"><i class="fas fa-check"></i></div>
+                                    <span class="category-name" id="cat-normal">Normal</span>
+                                    <span class="category-range">18.5 - 24.9</span>
+                                    <span class="category-risks" id="risk-normal">Low disease risk</span>
+                                    <div class="category-health-impact">
+                                        <h5><i class="fas fa-heartbeat"></i> Health Impact</h5>
+                                        <ul>
+                                            <li>Reduced risk of heart disease</li>
+                                            <li>Lower risk of type 2 diabetes</li>
+                                            <li>Better energy levels</li>
+                                            <li>Optimal organ function</li>
+                                        </ul>
+                                    </div>
+                                    <div class="category-tips">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Maintain healthy diet and regular physical activity</span>
+                                    </div>
+                                </div>
+                                <div class="bmi-category-item overweight">
+                                    <div class="category-icon"><i class="fas fa-exclamation"></i></div>
+                                    <span class="category-name" id="cat-overweight">Overweight</span>
+                                    <span class="category-range">25 - 29.9</span>
+                                    <span class="category-risks" id="risk-overweight">Risk of diabetes, hypertension</span>
+                                    <div class="category-health-impact">
+                                        <h5><i class="fas fa-heartbeat"></i> Health Impact</h5>
+                                        <ul>
+                                            <li>Increased risk of heart disease</li>
+                                            <li>Higher risk of type 2 diabetes</li>
+                                            <li>Joint problems</li>
+                                            <li>Sleep apnea</li>
+                                        </ul>
+                                    </div>
+                                    <div class="category-tips">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Increase physical activity and focus on portion control</span>
+                                    </div>
+                                </div>
+                                <div class="bmi-category-item obese">
+                                    <div class="category-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                    <span class="category-name" id="cat-obese">Obese</span>
+                                    <span class="category-range">&gt; 30</span>
+                                    <span class="category-risks" id="risk-obese">High risk of heart disease</span>
+                                    <div class="category-health-impact">
+                                        <h5><i class="fas fa-heartbeat"></i> Health Impact</h5>
+                                        <ul>
+                                            <li>Significantly elevated risk of heart disease</li>
+                                            <li>Higher risk of stroke</li>
+                                            <li>Various cancers</li>
+                                            <li>Metabolic syndrome</li>
+                                        </ul>
+                                    </div>
+                                    <div class="category-tips">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Consult healthcare provider and focus on sustainable lifestyle changes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bmi-interpretation">
+                                <h4><i class="fas fa-book"></i> How to Interpret Your BMI</h4>
+                                <p>Body Mass Index is a screening tool, not a diagnostic tool. A healthcare professional should evaluate your health status considering factors like muscle mass, bone density, and overall body composition.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bmi-faq">
+                            <h4 id="faq-title"><i class="fas fa-question-circle"></i> FAQ about BMI</h4>
+                            <div class="faq-container">
+                                <div class="faq-item">
+                                    <div class="faq-question">
+                                        <div class="faq-icon"><i class="fas fa-question"></i></div>
+                                        <div class="faq-question-text">
+                                            <span id="faq-what">What is BMI?</span>
+                                        </div>
+                                        <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+                                    </div>
+                                    <div class="faq-answer">
+                                        <p id="faq-what-answer">Body Mass Index (BMI) is a measure of weight in relation to height, used to categorize a person as underweight, normal, overweight, or obese.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <div class="faq-question">
+                                        <div class="faq-icon"><i class="fas fa-balance-scale"></i></div>
+                                        <div class="faq-question-text">
+                                            <span id="faq-accurate">Is BMI always accurate?</span>
+                                        </div>
+                                        <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+                                    </div>
+                                    <div class="faq-answer">
+                                        <p id="faq-accurate-answer">BMI has limitations. It doesn't differentiate between muscle and fat, and may not be accurate for athletes, the elderly, or pregnant women. Use it as a general guide and consult with a healthcare professional.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <div class="faq-question">
+                                        <div class="faq-icon"><i class="fas fa-arrow-down"></i></div>
+                                        <div class="faq-question-text">
+                                            <span id="faq-lower">How to lower BMI?</span>
+                                        </div>
+                                        <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+                                    </div>
+                                    <div class="faq-answer">
+                                        <p id="faq-lower-answer">To lower BMI, focus on a balanced diet, regular physical activity, adequate sleep, and stress management. Small sustainable changes are more effective than extreme diets.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <div class="faq-question">
+                                        <div class="faq-icon"><i class="fas fa-calculator"></i></div>
+                                        <div class="faq-question-text">
+                                            <span id="faq-formula">How is BMI calculated?</span>
+                                        </div>
+                                        <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+                                    </div>
+                                    <div class="faq-answer">
+                                        <p id="faq-formula-answer">BMI is calculated by dividing weight in kilograms by height in meters squared (BMI = kg/m²). For imperial units, multiply weight in pounds by 703, then divide by height in inches squared.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <footer>
-        <p>BMI Calculator © 2025 | Created with ❤️ by <a href="https://github.com/hyperionzs">Anggra.Dev</a></p>
+        <p>BMI Calculator © 2025 | <span id="created-by">Created with ❤️ by</span> <a href="https://github.com/hyperionzs">Anggra.Dev</a></p>
     </footer>
     
+    <!-- Share Modal -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="share-title"><i class="fas fa-share-alt"></i> Share Your BMI Result</h3>
+            <div class="share-options">
+                <button class="share-btn" id="shareWhatsapp" data-platform="whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>WhatsApp</span>
+                </button>
+                <button class="share-btn" id="shareTwitter" data-platform="twitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </button>
+                <button class="share-btn" id="shareFacebook" data-platform="facebook">
+                    <i class="fab fa-facebook"></i>
+                    <span>Facebook</span>
+                </button>
+                <button class="share-btn" id="shareEmail" data-platform="email">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email</span>
+                </button>
+            </div>
+            <div class="share-link-container">
+                <input type="text" id="shareLink" readonly>
+                <button id="copyLink" class="secondary-btn"><i class="fas fa-copy"></i> <span id="copy-text">Copy</span></button>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="script.js"></script>
 </body>
 
